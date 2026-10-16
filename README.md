@@ -2,7 +2,7 @@
 
 A programmable Intrusion Detection System built on **Suricata 6.0.20**, extended with **Lua scripts** to go beyond static signatures. The lab runs in **GNS3** and is validated by launching attacks from a Kali Linux machine against a segmented enterprise network.
 
-> University project for the *Security* course (Computer Engineering, ISEC, Polytechnic of Coimbra), 2025/26. The report and slides in `docs/` are written in Portuguese.
+> University project for the *Security* course (Computer Engineering, ISEC), 2025/26. The report and slides in `docs/` are written in Portuguese.
 
 ## Why this project
 
