@@ -6,7 +6,7 @@ A programmable Intrusion Detection System built on **Suricata 6.0.20**, extended
 
 ## Why this project
 
-Signature-based detection struggles with traffic that is obfuscated or that changes shape. This lab uses Suricata as a **Deep Packet Inspection** engine (Layer 7) and adds custom Lua logic for the cases plain rules can't express, such as keeping state across packets or applying conditional checks to payloads.
+Signature-based detection struggles with traffic that is obfuscated or that changes shape. This lab uses Suricata as a **Deep Packet Inspection** engine and adds custom Lua logic for the cases plain rules can't express, such as keeping state across packets or applying conditional checks to payloads.
 
 ## Detection modules
 
@@ -18,12 +18,6 @@ Four Lua modules, each called from a Suricata rule (`rules/suricata.rules`):
 | `forca_bruta_contador.lua` | 100002 | Brute-force login attempts | Stateful counter; alerts after 3 failed attempts | Attempted Administrator Privilege Gain (P1) |
 | `detecao_agente.lua` | 100003 | Offensive tools and scanners (`sqlmap`, `nmap`, `nikto`) | Searches the request payload for tool signatures | Web Application Attack (P1) |
 | `bloq_exec.lua` | 100004 | Downloads of executables (`.exe`, `.sh`, `.bat`) | Searches the request for executable extensions | Potential Corporate Privacy Violation (P1) |
-
-Example rule:
-
-```
-alert http any any -> any any (msg:"[ALERTA LUA] Fuga de Cartao de Credito Detetada"; lua:/etc/suricata/lua/dlp_cartao.lua; sid:100001; rev:1;)
-```
 
 ## Lab architecture
 
@@ -40,44 +34,6 @@ Built in GNS3 with Cisco IOU routers, split into three zones:
 - **Hub instead of SPAN/port mirroring.** A hub replicates every packet to the IDS interface at the physical level, with no processing overhead on the routers and no dependence on mirroring configuration.
 - **IP address on the monitoring interface.** The sensor was meant to run in stealth mode (no IP on the capture interface). In practice the HTTP transactions never completed, because the TCP stack had no address to answer from, so the interface got a static IP (`10.0.0.3/24`). This made the full request/response flow available to DPI.
 - **Suricata 6.0.20 instead of 8.0.3.** The latest version was tried first, but the Lua API had very little documented community material. Version 6.0.20 had far more documentation and examples, which made the detection modules faster to build and test.
-
-## Running the lab
-
-Requirements: GNS3 with Cisco IOU images (not included), an Ubuntu VM with Suricata 6.0.20, and a Kali Linux VM.
-
-1. Recreate the topology from `gns3/` (see the note on images below).
-2. Copy the scripts to the sensor and load the rules:
-   ```bash
-   sudo mkdir -p /etc/suricata/lua
-   sudo cp lua/*.lua /etc/suricata/lua/
-   sudo cp rules/suricata.rules /etc/suricata/rules/suricata.rules
-   ```
-3. Start Suricata in IDS mode on the monitored interface and follow the alerts:
-   ```bash
-   sudo suricata -c /etc/suricata/suricata.yaml -S /etc/suricata/rules/suricata.rules -i ens33 -v
-   tail -f /var/log/suricata/fast.log
-   ```
-4. From the Kali machine, run the tests in `attacks/` against the web service.
-
-> The GNS3 project does not include Cisco IOU or VM images. You need to supply your own.
-
-### Example test traffic
-
-Adapt the target address to your lab. The exact commands used in the original tests are in `attacks/`.
-
-```bash
-# DLP: HTTP POST containing a card-formatted string
-curl -X POST -d "card=1111-2222-3333-4444" http://10.0.0.3/
-
-# Brute force: 3 failed logins
-for i in 1 2 3; do curl -X POST -d "user=admin&pass=errada" http://10.0.0.3/; done
-
-# Offensive tool signature
-curl -A "sqlmap" http://10.0.0.3/
-
-# Executable download
-curl -O http://10.0.0.3/file.exe
-```
 
 ## Results
 
@@ -119,11 +75,6 @@ Possible next steps: per-IP state, header-specific matching, native Suricata rul
 - Artur Falcão
 - Gabriel Rodrigues
 - Rodrigo Prazeres
-
-## References
-
-1. Open Information Security Foundation (OISF), *Suricata 6.0.20 Documentation*, 2026. https://docs.suricata.io/en/suricata-6.0.20/index.html
-2. R. Ierusalimschy, L. H. de Figueiredo and W. Celes, *Lua 5.1 Reference Manual*, 2006. https://www.lua.org/manual/5.1/
 
 ## Disclaimer
 
