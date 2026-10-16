@@ -49,13 +49,11 @@ Every module fired the expected alert in `fast.log` during validation. Demos are
 ## Repository structure
 
 ```
-├── lua/          Detection scripts
-├── rules/        Suricata rules that call the scripts
-├── config/       Suricata configuration
+├── demos/        Demos of the lab
+├── docs/         Report and presentation (Portuguese)
 ├── gns3/         Topology and diagram
-├── attacks/      Commands used to generate the test traffic
-├── evidence/     fast.log output and screenshots
-└── docs/         Report and presentation (Portuguese)
+├── lua/          Detection scripts
+└── rules/        Suricata rules that call the scripts
 ```
 
 ## Authors
